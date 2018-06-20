@@ -8,13 +8,17 @@ var Formula = function () {
 
 Formula.prototype.registration=function(body,callback){
     var retObj={}
-    if(!body.userName)
+    if(!body.userName ||!_.isString(body.userName))
     {
        retObj.message="username should contain only alphabets"
        callback(retObj)
     }else if(!_.isString(body.email)){
           retObj.message="enter correct email"
           callback(retObj)
+    }else if (!body.phone || !(/[0-9]{10}/.test(body.phone))) {
+        console.log(typeof body.phone);
+        retObj.message = 'Invalid phoneNumber';
+        callback(retObj);
     }else if(!body.password || body.password.length<8)
     {
        retObj.message="password should be minimum of 8 characters"
@@ -49,7 +53,7 @@ Formula.prototype.registration=function(body,callback){
                         callback(retObj);
                     } else {
                         retObj.status = true;
-                        retObj.message = "reg success";
+                        retObj.message = "registration successfull";
                         retObj.data = data;
                         callback(retObj);
                     }   
@@ -107,5 +111,104 @@ Formula.prototype.login = function (body, callback) {
     )}
 }
 
+Formula.prototype.update=function(body,callback){
+    var retObj={}
+    if(!body.email){
+       retObj.message="enter your emai"
+       callback(retObj)  
+    }
+    else {
+        buyCollection.findOneAndUpdate({email:body.email}, body, function(error, result){
+        console.log("enter your email", body);                    
+            if(error){
+                console.log('err',error);
+                retObj.status = false;
+                retObj.message = "error";
+                callback(retObj);
+            }else if(result){
+                console.log('update successful');
+                retObj.status = true;
+                retObj.message = "update successful";
+                callback(retObj);
+            }
+            else{
+                console.log('else')
+                retObj.message="entered wrong email"
+                callback(retObj)
+            }
+        })
+    //     console.log("enter your email", body);        
+    //     buyCollection.findOne({email:body.email}, function(err,data)
+    //     {
+    //         console.log("your in update")
+    //          if(err){
+    //              console.log("error has occured")
+    //              retObj.message="error has occured"
+    //              callback(retObj)
+    //          }
+    //          else if(data){
+               
+    //              console.log("your data has matched", data.email);
+    //              buyCollection.update({email:data.email},
+    //             //    ,{
+    //             //        $set:{
+    //             //            phone:body.phone
+    //             //        }, 
+            
+    //                 body,  )
+    //             retObj.message="your data has been updated"
+    //             callback(retObj)
+    //          }
+    //          else{
+    //              console.log("user doesnt exists")
+    //              retObj.message="user doesnt exists"
+    //              callback(retObj)
+    //          }
+    //     })
 
+    }
+
+}
+
+Formula.prototype.read=function(callback){
+    var retObj={}
+    buyCollection.find({}, function(error, data){
+        if(error){
+            console.log('err',error);
+            retObj.status = false;
+            retObj.message = "error";
+            callback(retObj);
+        }else{
+            console.log('else');
+            retObj.status = true;
+            retObj.message = "fetch successful";
+            retObj.data = data;
+            callback(retObj);
+        }
+    })
+}
+
+Formula.prototype.delete=function(body,callback){
+    var retObj={}
+    buyCollection.findOneAndDelete({email:body.email}, function(error, data){
+        console.log('entered into delete')
+        if(error){
+            console.log('err',error);
+            retObj.status = false;
+            retObj.message = "error";
+            callback(retObj);
+        }else if(data){
+            console.log('else');
+            retObj.status = true;
+            retObj.message = "deleted successful";
+            retObj.data = data;
+            callback(retObj);
+        }
+        else{
+            console.log('enetered email is not in database')
+            retObj.messgae="entered email is not in database"
+            callback(retObj)
+        }
+    })
+}
 module.exports = new Formula();

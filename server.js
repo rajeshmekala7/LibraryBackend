@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 var config = require('./config/config');
 var UserRoutes = require('./routes/user');
 var app = express();
-app.use(express.static('client',{index:'/views/index.html'}));
+// app.use(express.static('client',{index:'/views/index.html'}));
 app.use(cors());
 app.use(morgan('dev'));
 app.use(bodyParser.json({limit: config.bodyParserLimit}));

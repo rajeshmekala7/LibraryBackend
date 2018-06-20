@@ -15,6 +15,25 @@ OpenRouter.post('/register', function (req, res) {
     });
 });
 
+OpenRouter.post('/update', function (req, res) {
+    user.update(req.body, function (response) {
+        res.json(response);
+    });
+});
+
+OpenRouter.get('/read', function (req, res) {
+    user.read( function (response) {
+        console.log('res')
+        res.json(response);
+    });
+});
+
+OpenRouter.post('/delete', function (req, res) {
+    user.delete(req.body, function (response) {
+        res.json(response);
+    });
+});
+
 
 
 
