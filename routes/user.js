@@ -5,6 +5,7 @@ var user = require('./../modules/user');
 
 OpenRouter.post('/login', function (req, res) {
     user.login(req.body, function (response) {
+        console.log('login',req.headers);
         res.json(response);
     });
 });
@@ -33,6 +34,24 @@ OpenRouter.post('/delete', function (req, res) {
         res.json(response);
     });
 });
+
+OpenRouter.post('/changepassword', function (req, res) {
+    user.changePassword(req.body, function (response) {
+        res.json(response);
+    });
+});
+
+OpenRouter.post('/bookid',function(req,res){
+    user.bookid(req.body,function(response){
+        res.json(response);
+    })
+})
+
+OpenRouter.post('/updatebookid',function(req,res){
+    user.updatebookid(req.body,function(response){
+        res.json(response);
+    })
+})
 
 
 

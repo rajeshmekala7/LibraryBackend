@@ -3,5 +3,11 @@ module.exports = {
     bodyParserLimit: '100MB',
     mongodb: {
         url: 'mongodb://localhost/buy'
+    },
+    jwt: {
+        secret: 'SecretKey',
+        options: {
+        	expiresIn: "1 day"
+        }
     }
 };

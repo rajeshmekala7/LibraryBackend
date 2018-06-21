@@ -4,21 +4,29 @@ var config = require('./../config/config');
 
 mongoose.connect(config.mongodb.url);
 
-var buySchema=new Schema({
+var registerSchema=new Schema({
     userName:String,
     email: String,
     phone: Number,
     password: String,
     confirmPassword:String,
     newPassword:String,
+})
+
+var bookschema=new Schema({
+    email:String,
     book1:String,
     book2:String,
     book3:String
 })
 
-var buyCollection = mongoose.model('user',buySchema,'user');
+    
 
+
+var registerCollection = mongoose.model('user',registerSchema,'user');
+var bookCollection=mongoose.model('books',bookschema,'books')
 module.exports = {
 
-    buyCollection:buyCollection
+    registerCollection,
+    bookCollection
 };
