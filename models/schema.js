@@ -5,7 +5,7 @@ var config = require('./../config/config');
 mongoose.connect(config.mongodb.url);
 
 var buySchema=new Schema({
-    userName:String,
+    name:String,
     email: String,
     phone: Number,
     password: String,

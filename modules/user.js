@@ -10,9 +10,9 @@ var Formula = function () {
 
 Formula.prototype.registration=function(body,callback){
     var retObj={}
-    if(!body.userName ||!_.isString(body.userName))
+    if(!body.name ||!_.isString(body.name))
     {
-       retObj.message="username should contain only alphabets"
+       retObj.message="name should contain only alphabets"
        callback(retObj)
     }else if(!_.isString(body.email)){
           retObj.message="enter correct email"
@@ -45,7 +45,7 @@ Formula.prototype.registration=function(body,callback){
              }
              else {
                 var user = new buyCollection({
-                    userName: body.userName, email: body.email, phone: body.phone,
+                    name: body.name, email: body.email, phone: body.phone,
                     password: hash
                 });
                 user.save(function (err, data) {
@@ -105,18 +105,17 @@ Formula.prototype.login = function (body, callback) {
               console.log("doc",doc);
               if(bcrypt.compareSync(body.password,doc.password))
               {
-                 jwt.sign({email:body.email},config.jwt.secret, function (err, token){
+                 jwt.sign({email:body.email,id: doc._id},config.jwt.secret, function (err, token){
                     if(err){
                         console.log("please try again")
                         retObj.message="please try again"
                         callback(retObj)
                     }
                     else{
-
-                    retObj.token=token
-                    retObj.message="login successful"
-                    console.log("login successful")
-                    callback(retObj)
+                     retObj.token=token
+                     retObj.message="login successful"
+                     console.log("login successful")
+                     callback(retObj)
                     }
                  })
               }
@@ -135,14 +134,10 @@ Formula.prototype.login = function (body, callback) {
     )}
 }
 
-Formula.prototype.update=function(body,callback){
+Formula.prototype.update=function(jwt,body,callback){
     var retObj={}
-    if(!body.email){
-       retObj.message="enter your emai"
-       callback(retObj)  
-    }
-    else {
-        buyCollection.findOneAndUpdate({email:body.email}, body, function(error, result){
+    
+        buyCollection.findOneAndUpdate({_id:jwt.id}, body, function(error, result){
         console.log("enter your email", body);                    
             if(error){
                 console.log('err',error);
@@ -150,16 +145,25 @@ Formula.prototype.update=function(body,callback){
                 retObj.message = "error";
                 callback(retObj);
             }
-            else if(body.password){
-               console.log('you cant change password here')
-               retObj.message="you cant change password here"
+            else if(body.email){
+                console.log('email id cannot be updated')
+                retObj.message="email ud cannot be updated"
                callback(retObj)
+            }
+            // else if(body.branch){
+            //    console.log('you cannot change your branch')
+            //    retObj.message="you cannot change your branch"
+            //    callback(retObj)
+            // }
+            else if(!body.name || !_.isString(body.name)){
+              console.log('enter your name')
+              retObj.message="enter your name"
+              callback(retObj)
             }
             else if(result){
                 console.log('update successful');
                 retObj.status = true;
                 retObj.message = "update successful";
-                retObj.pass=result.password;
                 callback(retObj);
             }
             else{
@@ -201,22 +205,27 @@ Formula.prototype.update=function(body,callback){
 
     }
 
-}
 
-Formula.prototype.read=function(callback){
+
+Formula.prototype.read=function(jwt,callback){
     var retObj={}
-    buyCollection.find({email:"mekalarajeshreddy@gmail.com"}, function(error, data){
+    buyCollection.findOne({_id: jwt.id}, function(error, data){
         if(error){
             console.log('err',error);
             retObj.status = false;
             retObj.message = "error";
             callback(retObj);
-        }else{
-            console.log('else');
+        }else if(data){
+            console.log('else in read');
             retObj.status = true;
             retObj.message = "fetch successful";
             retObj.data = data;
             callback(retObj);
+        }
+        else{
+            console.log('fetch not succesfull')
+            retObj.message="fetch not succesfull"
+            callback(retObj)
         }
     })
 }
@@ -242,9 +251,9 @@ Formula.prototype.delete=function(body,callback){
         }
     })
 }
-Formula.prototype.changePassword=function(body,callback){
+Formula.prototype.changePassword=function(jwt,body,callback){
     var retObj={}
-    buyCollection.findOne({email:body.email},function(err,data){
+    buyCollection.findOne({_id:jwt.id},function(err,data){
         console.log('your in change password')
         if(err){
             console.log('error has occured')
@@ -257,7 +266,7 @@ Formula.prototype.changePassword=function(body,callback){
                 console.log('password sync is occuring')
                 var hash=bcrypt.hashSync(body.newPassword, 10);
                 console.log('hash',hash)
-                buyCollection.findOneAndUpdate({email:body.email},{
+                buyCollection.findOneAndUpdate({_id:jwt.id},{
                     $set:{
                         password:hash
                     }
@@ -279,7 +288,7 @@ Formula.prototype.changePassword=function(body,callback){
         }
     })
 }
-Formula.prototype.bookid=function(body,callback){
+Formula.prototype.bookid=function(jwt,body,callback){
     var retObj={}
     console.log('your in book id')
     if(!body.email){
@@ -291,7 +300,7 @@ Formula.prototype.bookid=function(body,callback){
        callback(retObj)
     }
     else{
-        buyCollection.findOneAndUpdate({email:body.email},body,function(err,data)
+        buyCollection.findOneAndUpdate({_id:jwt.id},body,function(err,data)
          {
              console.log('your here')
              if(err)
@@ -315,20 +324,19 @@ Formula.prototype.bookid=function(body,callback){
 }
 Formula.prototype.updatebookid=function(body,callback){
     var retObj={};
+    if(body.book1)
+    { $filter ={ $unset:{
+        book1:{$exists:true}
+     }}
+    }
     if(!body.email){
         console.log('enter your email')
         retObj.message='enter your email'
         callback(retObj)
     }
+    
     else{
-        let query = {};
-        query[body] = ""
-        console.log('22222222',JSON.stringify(query));
-        buyCollection.findOneAndUpdate({email:body.email},{
-            $unset:{
-                 query
-            }
-        },function(err,data){
+        buyCollection.findOneAndUpdate({email:body.email},$filter,function(err,data){
             if(err){
               console.log('error')
               retObj.message="error"
