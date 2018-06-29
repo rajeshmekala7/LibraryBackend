@@ -4,6 +4,21 @@ var AuthRouter=express.Router();
 
 var user = require('./../modules/user');
 
+OpenRouter.post('/register', function (req, res) {
+    user.registration(req.body, function (response) {
+        res.json(response);
+    });
+});
+
+
+// user mail verification
+OpenRouter.get('/verifymail/:id', function (req, res) {
+    // console.log('verifyemail',req);
+    user.verifyMail(req.params.id, function (result) {
+        res.json(result);
+    })
+});
+
 OpenRouter.post('/login', function (req, res) {
     user.login(req.body, function (response) {
         // console.log('login',req);
@@ -11,11 +26,6 @@ OpenRouter.post('/login', function (req, res) {
     });
 });
 
-OpenRouter.post('/register', function (req, res) {
-    user.registration(req.body, function (response) {
-        res.json(response);
-    });
-});
 
 AuthRouter.post('/update', function (req, res) {
     user.update(req.jwt,req.body, function (response) {
@@ -49,11 +59,6 @@ AuthRouter.post('/bookid',function(req,res){
     })
 })
 
-OpenRouter.post('/updatebookid',function(req,res){
-    user.updatebookid(req.body,function(response){
-        res.json(response);
-    })
-})
 
 
 

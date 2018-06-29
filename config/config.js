@@ -9,5 +9,6 @@ module.exports = {
         options: {
         	expiresIn: "1 day"
         }
-    }
+    },
+    passwordLength:8,
 };

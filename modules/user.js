@@ -8,6 +8,37 @@ var buyCollection = require('./../models/schema').buyCollection;
 var Formula = function () {
 };
 
+
+var SendGrid = require('sendgrid-nodejs').SendGrid;
+var sgMail = require('@sendgrid/mail');
+var fs = require('fs');
+sgMail.setApiKey('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');
+
+function sendEmail (id, email, html, callback) {
+    var retObj={};
+    // console.log("2345678");
+                var msg = {
+                   to: email,
+                   from: 'mekalarajeshreddy@gmail.com',
+                   subject: 'Mail Verification',
+                   html: html
+                };
+               sgMail.send(msg, function (error, response) {
+                  console.log('your in send function')
+                   if (error) {
+                       console.log('error has occured',error);
+                       retObj.status = false;
+                       retObj.message = "Please try again";
+                       callback(retObj);
+                   } else {
+                        console.log('successfully registered')
+                       retObj.status = true;
+                       retObj.message = "Successfully Registered..!";
+                       callback(retObj);
+                   }
+               });
+}
+
 Formula.prototype.registration=function(body,callback){
     var retObj={}
     if(!body.name ||!_.isString(body.name))
@@ -17,11 +48,19 @@ Formula.prototype.registration=function(body,callback){
     }else if(!_.isString(body.email)){
           retObj.message="enter correct email"
           callback(retObj)
+    }
+    else if(!_.isString(body.rollno)){
+       retObj.message="enter your roll no properly"
+       callback(retObj)
+    }
+    else if(!_.isString(body.branch)){
+        retObj.message="enter your branch"
+        callback(retObj)
     }else if (!body.phone || !(/[0-9]{10}/.test(body.phone))) {
         console.log(typeof body.phone);
         retObj.message = 'Invalid phoneNumber';
         callback(retObj);
-    }else if(!body.password || body.password.length<8)
+    }else if(!body.password || body.password.length<config.passwordLength)
     {
        retObj.message="password should be minimum of 8 characters"
        callback(retObj)
@@ -45,7 +84,7 @@ Formula.prototype.registration=function(body,callback){
              }
              else {
                 var user = new buyCollection({
-                    name: body.name, email: body.email, phone: body.phone,
+                    name: body.name, email: body.email,rollno:body.rollno,branch:body.branch, phone: body.phone,
                     password: hash
                 });
                 user.save(function (err, data) {
@@ -54,17 +93,39 @@ Formula.prototype.registration=function(body,callback){
                         retObj.message = "plese try again";
                         callback(retObj);
                     } else {
-                        retObj.status = true;
-                        retObj.message = "registration successfull";
-                        retObj.data = data;
-                        callback(retObj);
+                        console.log('lllllll')
+                        var authenticationURL = 'http://localhost:3000/user/verifymail/' + data._id;
+                         html='<a target=_blank href=' + authenticationURL + '>Please Click here to Confirm your email</a>'+
+                        '<p>Name:'+data.email+'</p>';
+                        sendEmail(data._id, data.email, html, function (response) {
+                            callback(response);
+                        });
                     }   
                })
             }
          })
      }
-
 }
+
+//verification done of mail sent
+Formula.prototype.verifyMail = function (id, callback) {
+    var retObj = {};
+    buyCollection.findOneAndUpdate({_id: id}, {$set: {isVerified: true}}, function (error, result) {
+        if (error) {
+            retObj.status = false;
+            retObj.message = "Error";
+            callback(retObj);
+        } else if (result) {
+            retObj.status = true;
+            retObj.message = "Success";
+            callback(retObj);
+        } else {
+            retObj.status = false;
+            retObj.message = "Invalid";
+            callback(retObj);
+        }
+    })
+};
 
 // var payload = {
 //     phone: buyCollection.phone
@@ -86,7 +147,7 @@ Formula.prototype.login = function (body, callback) {
         retObj.message="enter email"
         callback(retObj)
     }
-    else if(!body.password)
+    else if(!body.password || body.password.length<config.passwordLength)
     {
         console.log("please enter you password")
         retObj.message="enter password"
@@ -105,6 +166,8 @@ Formula.prototype.login = function (body, callback) {
               console.log("doc",doc);
               if(bcrypt.compareSync(body.password,doc.password))
               {
+                if(doc.isVerified===true)
+                {
                  jwt.sign({email:body.email,id: doc._id},config.jwt.secret, function (err, token){
                     if(err){
                         console.log("please try again")
@@ -118,12 +181,16 @@ Formula.prototype.login = function (body, callback) {
                      callback(retObj)
                     }
                  })
-              }
-              else{
-                  console.log("wrong password")
-                  retObj.message="wrong password"
+               }
+               else{
+                  retObj.message="please verify your email"
                   callback(retObj)
-              }
+               }
+             }
+            else{
+                 retObj.message="wrong password"
+                callback(retObj)
+             }
             }
           else{
               console.log("user not in database")
@@ -291,11 +358,7 @@ Formula.prototype.changePassword=function(jwt,body,callback){
 Formula.prototype.bookid=function(jwt,body,callback){
     var retObj={}
     console.log('your in book id')
-    if(!body.email){
-       retObj.message="enter email"
-       callback(retObj)
-    }
-    else if(!body.book1 && !body.book2 && !body.book3){
+   if(!body.book1 && !body.book2 && !body.book3){
        retObj.message="no book value entered"
        callback(retObj)
     }
@@ -319,24 +382,12 @@ Formula.prototype.bookid=function(jwt,body,callback){
                 callback(retObj)
            }
          })
-
-    }
+        }
 }
 Formula.prototype.updatebookid=function(body,callback){
     var retObj={};
-    if(body.book1)
-    { $filter ={ $unset:{
-        book1:{$exists:true}
-     }}
-    }
-    if(!body.email){
-        console.log('enter your email')
-        retObj.message='enter your email'
-        callback(retObj)
-    }
-    
-    else{
-        buyCollection.findOneAndUpdate({email:body.email},$filter,function(err,data){
+     var book={$unset:{book1:""}}
+      buyCollection.findOneAndUpdate({name:body.name},book,function(err,data){
             if(err){
               console.log('error')
               retObj.message="error"
@@ -352,49 +403,8 @@ Formula.prototype.updatebookid=function(body,callback){
                 retObj.message="user not found"
                 callback(retObj)
             }
-             // else if(data)
-            // {
-            //     console.log('your inside updating bookid')
-            //     buyCollection.update({email:body.email},{
-            //         $unset:{
-            //               book1:""
-            //         },function(err,data){
-            //             if(err){
-            //                 console.log('error')
-            //                 retObj.message="error"
-            //                 callback(retObj)
-            //             }
-            //             else if(data){
-            //                 cosnole.log('data has been updated')
-            //                 retObj.message='data has been updated'
-            //                 callback(retObj)
-            //             }
-            //             else{
-            //                 console.log('user is not present')
-            //                 retObj.message="user is not present"
-            //                 callback(retObj)
-            //             }
-            //         }
-            //     })
-            // }
-            // else{
-            //     console.log('user not found')
-            //     retObj.message='user not found'
-            //     callback(retObj)
-            // }
+            
         })
         }
- }
-//  Formula.prototype.authenicate=function(body,callback){
-//      buyCollection.findOne({email:body.email},function(err,data){
-//          if(err){
-//              console.log('error')
-//              retObj.message='error has occured'
-//              callback(retObj)
-//          }
-//          else if(data){
 
-//          }
-//      })
-//  }
 module.exports = new Formula();

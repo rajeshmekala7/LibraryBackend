@@ -8,6 +8,7 @@ var jwt = require('jsonwebtoken');
 
 var config = require('./config/config');
 var UserRoutes = require('./routes/user');
+var AdminRoutes=require('./routes/admin');
 var app = express();
 // app.use(express.static('client',{index:'/views/index.html'}));
 app.use(cookieParser());
@@ -18,6 +19,7 @@ app.use(bodyParser.json({limit: config.bodyParserLimit}));
 // app.use(bodyParser.urlencoded({limit: config.bodyParserLimit, extended: true}));
 
 app.use('/user', UserRoutes.OpenRouter);
+app.use('/user',AdminRoutes.OpenRouter);
 
 app.use(function(req,res, next){
   if(/^\/user\//.test(req.url)) {
