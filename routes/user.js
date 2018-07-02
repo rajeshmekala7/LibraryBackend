@@ -60,6 +60,12 @@ AuthRouter.post('/bookid',function(req,res){
 })
 
 
+AuthRouter.post('/updatebookid',function(req,res){
+    user.updatebookid(req.jwt,req.body,function(response){
+        res.json(response);
+    })
+})
+
 
 
 

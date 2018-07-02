@@ -41,6 +41,38 @@ function sendEmail (id, email, html, callback) {
 
 Formula.prototype.registration=function(body,callback){
     var retObj={}
+    if(body.role==='admin')
+    {
+        if(!body.email || !_.isString(body.email)){
+            retObj.message="enter email"
+            callback(retObj);
+        }
+        else if(!body.password || body.password< config.passwordLength)
+        {
+            retObj.message="invalid password"
+            callback(retObj)
+        }
+        else{
+            var hash=bcrypt.hashSync(body.password,10);
+            var admin = new buyCollection({
+                email: body.email,
+                password: hash,
+                role:body.role,
+                isVerified:body.isVerified
+            });
+            admin.save(function (err, data) {
+                if (err) {
+                    retObj.status = false;
+                    retObj.message = "plese try again";
+                    callback(retObj);
+                } else {
+                    retObj.message="registration successful"
+                    callback(retObj)
+                }   
+           })
+        }
+    }
+    else {
     if(!body.name ||!_.isString(body.name))
     {
        retObj.message="name should contain only alphabets"
@@ -105,6 +137,7 @@ Formula.prototype.registration=function(body,callback){
             }
          })
      }
+    }
 }
 
 //verification done of mail sent
@@ -141,7 +174,8 @@ Formula.prototype.verifyMail = function (id, callback) {
 
 Formula.prototype.login = function (body, callback) {
     var retObj={}
-    if(!body.email)
+    
+    if(!body.email )
     {
         console.log("please enter you email")
         retObj.message="enter email"
@@ -168,7 +202,7 @@ Formula.prototype.login = function (body, callback) {
               {
                 if(doc.isVerified===true)
                 {
-                 jwt.sign({email:body.email,id: doc._id},config.jwt.secret, function (err, token){
+                 jwt.sign({email:body.email,id:doc._id,role:doc.role},config.jwt.secret, function (err, token){
                     if(err){
                         console.log("please try again")
                         retObj.message="please try again"
@@ -362,7 +396,7 @@ Formula.prototype.bookid=function(jwt,body,callback){
        retObj.message="no book value entered"
        callback(retObj)
     }
-    else{
+    else if(jwt.role==="student"){
         buyCollection.findOneAndUpdate({_id:jwt.id},body,function(err,data)
          {
              console.log('your here')
@@ -384,10 +418,12 @@ Formula.prototype.bookid=function(jwt,body,callback){
          })
         }
 }
-Formula.prototype.updatebookid=function(body,callback){
+
+Formula.prototype.updatebookid=function(jwt,body,callback){
     var retObj={};
      var book={$unset:{book1:""}}
-      buyCollection.findOneAndUpdate({name:body.name},book,function(err,data){
+     if(jwt.role==="admin"){
+      buyCollection.findOneAndUpdate({rollno:body.rollno},book,function(err,data){
             if(err){
               console.log('error')
               retObj.message="error"
@@ -406,5 +442,5 @@ Formula.prototype.updatebookid=function(body,callback){
             
         })
         }
-
+    }
 module.exports = new Formula();

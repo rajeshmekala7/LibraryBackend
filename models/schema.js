@@ -17,18 +17,25 @@ var buySchema=new Schema({
     book1:String,
     book2:String,
     book3:String,
-    bookname:String
+    bookname:String,
+    role:{
+        type:String,
+        enum:["admin","student"],
+        default:'student'
+    },
+    username:String,
+     pwd:String
 })
 
-var adminSchema=new Schema({
-    username:String,
-    pwd:String
-})
+// var adminSchema=new Schema({
+//     username:String,
+//     pwd:String
+// })
 
 var buyCollection = mongoose.model('user',buySchema,'user');
-var adminCollection = mongoose.model('admin',adminSchema,'admin');
+// var adminCollection = mongoose.model('admin',adminSchema,'admin');
 
 module.exports = {
-   adminCollection:adminCollection,
+//    adminCollection:adminCollection,
     buyCollection:buyCollection
 };

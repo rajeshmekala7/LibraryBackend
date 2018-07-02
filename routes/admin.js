@@ -24,8 +24,8 @@ AuthRouter.get('/read', function (req, res) {
 });
 
 
-OpenRouter.post('/updatebookid',function(req,res){
-    user.updatebookid(req.body,function(response){
+AuthRouter.post('/updatebookid',function(req,res){
+    user.updatebookid(req.jwt,req.body,function(response){
         res.json(response);
     })
 })

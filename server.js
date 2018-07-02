@@ -50,6 +50,7 @@ app.use(function (req, res, next) {
     });
 
 app.use('/user', UserRoutes.AuthRouter);
+// app.use('/user', AdminRoutes.AuthRouter);
 
 app.listen(config.port, function () {
     console.log('started up on port' ,config.port);

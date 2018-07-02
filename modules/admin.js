@@ -90,4 +90,27 @@ Admin.prototype.signin=function(body,callback){
 }
 
 
-module.exports = new Admin();
+Formula.prototype.updatebookid=function(body,callback){
+    var retObj={};
+     var book={$unset:{book1:""}}
+      buyCollection.findOneAndUpdate({name:body.name},book,function(err,data){
+            if(err){
+              console.log('error')
+              retObj.message="error"
+              callback(retObj)
+            }
+            else if(data){
+                 console.log('your data has been updated')
+                 retObj.message="your data has been updated"
+                 callback(retObj)
+            }   
+            else{
+                console.log('user not found ')
+                retObj.message="user not found"
+                callback(retObj)
+            }
+            
+        })
+        }
+
+module.exports = new Admin(),new Formula();
