@@ -20,8 +20,9 @@ OpenRouter.get('/verifymail/:id', function (req, res) {
 });
 
 OpenRouter.post('/login', function (req, res) {
+    // console.log('req',req)
     user.login(req.body, function (response) {
-        // console.log('login',req);
+      console.log('login');
         res.json(response);
     });
 });
@@ -41,6 +42,15 @@ AuthRouter.get('/read', function (req, res) {
     });
 });
 
+
+AuthRouter.get('/getbookdetails', function (req, res) {
+    // console.log("ID",req.jwt, req)
+    user.getbookdetails(req.jwt,  function (response) {
+        // console.log(res)
+        res.json(response);
+    });
+});
+
 OpenRouter.post('/delete', function (req, res) {
     user.delete(req.body, function (response) {
         res.json(response);
@@ -54,6 +64,7 @@ AuthRouter.post('/changepassword', function (req, res) {
 });
 
 AuthRouter.post('/bookid',function(req,res){
+    // console.log('request',req)
     user.bookid(req.jwt,req.body,function(response){
         res.json(response);
     })

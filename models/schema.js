@@ -3,12 +3,15 @@ var Schema = mongoose.Schema;
 var config = require('./../config/config');
 
 mongoose.connect(config.mongodb.url);
-
+       
 var buySchema=new Schema({
     name:String,
     email: String,
     rollno: String,
-    branch: String,
+    branch: {
+        type:String,
+        enum:["CSE","ECE","EEE","IT","CIVIL","MECH"],
+    },
     phone: Number,
     password: String,
     confirmPassword:String,
@@ -17,8 +20,10 @@ var buySchema=new Schema({
     book1:String,
     book2:String,
     book3:String,
-    bookname:String,
-    role:{
+    date1:String,
+    date2:String,
+    date3:String,
+   role:{
         type:String,
         enum:["admin","student"],
         default:'student'
