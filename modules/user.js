@@ -12,7 +12,7 @@ var Formula = function () {
 var SendGrid = require('sendgrid-nodejs').SendGrid;
 var sgMail = require('@sendgrid/mail');
 var fs = require('fs');
-sgMail.setApiKey('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');
+sgMail.setApiKey(your api key);
 
 function sendEmail (id, email, html, callback) {
     var retObj={};
